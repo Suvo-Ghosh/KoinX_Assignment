@@ -1,6 +1,6 @@
 import express from 'express';
 import statsRoutes from './routes/statsRoutes.js';
-import { startNATS } from './nats/subscriber.js';
+import { subscribeToCryptoUpdate } from './nats/subscriber.js';
 import dotenv from 'dotenv';
 import connectDB from './configs/mongoConfig.js';
 dotenv.config();
@@ -15,11 +15,10 @@ const PORT = process.env.PORT || 5000;
 connectDB()
     .then(() => {
         console.log('MongoDB connected');
-        // startNATS();
         app.listen(PORT, () => {
             console.log(`API Server running on port ${PORT}`);
         });
+        subscribeToCryptoUpdate(); // Subscribe to NATS
     })
-    .catch(console.error);
+    .catch(err => console.error('MongoDB connection error:', err));
 
-export default app;

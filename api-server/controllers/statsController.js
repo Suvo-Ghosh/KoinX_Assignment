@@ -1,36 +1,26 @@
 import CryptoStat from '../models/CryptoStat.js';
-import { fetchCryptoStats } from '../services/coinGeckoService.js';
-import { calculateStdDeviation } from '../utils/stdDeviation.js';
-
-export const storeCryptoStats = async () => {
-    const stats = await fetchCryptoStats();
-    const entries = Object.entries(stats).map(([coin, info]) => ({
-        coin,
-        price: info.usd,
-        marketCap: info.usd_market_cap,
-        change24h: info.usd_24h_change
-    }));
-
-    await CryptoStat.insertMany(entries);
-};
 
 export const getLatestStats = async (req, res) => {
     const { coin } = req.query;
-    const stat = await CryptoStat.findOne({ coin }).sort({ createdAt: -1 });
-    if (!stat) return res.status(404).json({ error: 'Coin data not found' });
+    const latest = await CryptoStat.findOne({ coin }).sort({ createdAt: -1 });
+    if (!latest) return res.status(404).json({ error: 'No data found' });
 
     res.json({
-        price: stat.price,
-        marketCap: stat.marketCap,
-        "24hChange": stat.change24h
+        price: latest.price,
+        marketCap: latest.marketCap,
+        "24hChange": latest.change24h
     });
 };
 
 export const getPriceDeviation = async (req, res) => {
     const { coin } = req.query;
-    const prices = await CryptoStat.find({ coin }).sort({ createdAt: -1 }).limit(100);
-    const priceArray = prices.map(p => p.price);
-    const deviation = calculateStdDeviation(priceArray);
+    const records = await CryptoStat.find({ coin }).sort({ createdAt: -1 }).limit(100);
+    if (records.length < 2) return res.status(400).json({ error: 'Not enough data' });
 
-    res.json({ deviation: Number(deviation.toFixed(2)) });
+    const prices = records.map(r => r.price);
+    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+    const variance = prices.reduce((sum, val) => sum + (val - avg) ** 2, 0) / prices.length;
+    const stddev = Math.sqrt(variance);
+
+    res.json({ deviation: +stddev.toFixed(2) });
 };
