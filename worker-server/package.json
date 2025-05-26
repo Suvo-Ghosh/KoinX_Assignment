@@ -1,15 +1,15 @@
 {
   "name": "worker-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "worker server for koinx assignment",
   "main": "app.js",
-  "devDependencies": {},
   "scripts": {
     "dev": "nodemon app.js",
     "start": "node app.js"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
+    "express": "^5.1.0",
     "nats": "^2.29.3",
     "node-cron": "^4.0.5"
   },
