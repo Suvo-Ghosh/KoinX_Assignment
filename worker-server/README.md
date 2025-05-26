@@ -1,4 +1,4 @@
-# Worker Server – KoinX Backend Internship
+# Worker Server – KoinX Backend Assignment
 
 ## 📦 Features
 
